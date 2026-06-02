@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Omar · Learning Dashboard</title>
+  <style>
+    :root {
+      --bg:           #fdf8f2;
+      --surface:      #ffffff;
+      --surface-alt:  #fef9f4;
+      --border:       #ead9c8;
+      --text:         #2c1f0e;
+      --text-soft:    #7a6248;
+      --primary:      #c2690a;
+      --primary-bg:   #fff4e6;
+      --green:        #16a34a;
+      --green-bg:     #dcfce7;
+      --yellow:       #a16207;
+      --yellow-bg:    #fef9c3;
+      --orange:       #c2410c;
+      --orange-bg:    #ffedd5;
+      --red:          #b91c1c;
+      --red-bg:       #fee2e2;
+      --gray:         #64748b;
+      --gray-bg:      #f1f5f9;
+      --radius:       14px;
+      --radius-sm:    8px;
+      --shadow:       0 2px 10px rgba(0,0,0,0.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px 12px;
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-title { font-size: 20px; font-weight: 700; color: var(--primary); }
+    .header-date  { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+    #btn-refresh {
+      background: var(--primary-bg); border: 1px solid var(--border);
+      border-radius: 20px; padding: 6px 14px; font-size: 13px;
+      color: var(--primary); cursor: pointer; font-weight: 600;
+    }
+    #btn-refresh:active { opacity: 0.7; }
+    /* ── LAYOUT ── */
+    main { max-width: 520px; margin: 0 auto; padding: 16px 16px 40px; display: flex; flex-direction: column; gap: 20px; }
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-header .icon { font-size: 20px; }
+    .card-header h2 { font-size: 16px; font-weight: 700; flex: 1; }
+    .card-body { padding: 16px 18px; }
+    /* ── BADGES ── */
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+    .badge-primary  { background: var(--primary-bg); color: var(--primary); }
+    .badge-green    { background: var(--green-bg);   color: var(--green); }
+    .badge-yellow   { background: var(--yellow-bg);  color: var(--yellow); }
+    .badge-orange   { background: var(--orange-bg);  color: var(--orange); }
+    .badge-red      { background: var(--red-bg);     color: var(--red); }
+    .badge-gray     { background: var(--gray-bg);    color: var(--gray); }
+    /* ── SECTION 1: FOCUS ── */
+    .focus-stage { font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+    .focus-subtitle { font-size: 13px; color: var(--text-soft); margin-bottom: 14px; }
+    .focus-what { font-size: 14px; color: var(--text); background: var(--surface-alt); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 14px; border-left: 3px solid var(--primary); }
+    .focus-rules { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .focus-do, .focus-avoid {
+      border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px;
+    }
+    .focus-do    { background: var(--green-bg);  border-left: 3px solid var(--green);  }
+    .focus-avoid { background: var(--red-bg);    border-left: 3px solid var(--red);    }
+    .focus-do strong, .focus-avoid strong { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+    .focus-do strong    { color: var(--green); }
+    .focus-avoid strong { color: var(--red); }
+    /* ── SECTION 2: PROMPTS ── */
+    .domain-tabs { display: flex; gap: 6px; flex-wrap: wrap; padding: 14px 18px 0; }
+    .domain-tab {
+      padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: var(--surface-alt);
+      cursor: pointer; color: var(--text-soft); transition: all .15s;
+    }
+    .domain-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .prompts-list { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; }
+    .prompt-card {
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      overflow: hidden; cursor: pointer;
+    }
+    .prompt-card-header {
+      padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+      background: var(--surface-alt);
+    }
+    .prompt-situation { font-size: 13px; color: var(--text-soft); flex: 1; }
+    .prompt-toggle { font-size: 18px; color: var(--text-soft); transition: transform .2s; }
+    .prompt-toggle.open { transform: rotate(180deg); }
+    .prompt-card-body { padding: 12px 14px; display: none; border-top: 1px solid var(--border); }
+    .prompt-card-body.open { display: block; }
+    .prompt-say { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .prompt-say span { color: var(--primary); }
+    .prompt-target { font-size: 13px; color: var(--text-soft); margin-bottom: 6px; }
+    .prompt-notes { font-size: 13px; color: var(--text-soft); background: var(--surface-alt); border-radius: var(--radius-sm); padding: 8px 10px; }
+    /* ── SECTION 3: PROGRESS ── */
+    .domain-group { margin-bottom: 8px; }
+    .domain-group-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; cursor: pointer; border-radius: var(--radius-sm);
+      background: var(--surface-alt); margin-bottom: 6px;
+    }
+    .domain-group-header .domain-icon { font-size: 18px; }
+    .domain-group-header .domain-name { font-size: 14px; font-weight: 700; flex: 1; }
+    .domain-group-header .domain-chevron { font-size: 16px; color: var(--text-soft); transition: transform .2s; }
+    .domain-group-header.open .domain-chevron { transform: rotate(180deg); }
+    .skill-list { display: flex; flex-direction: column; gap: 8px; padding: 0 4px; }
+    .skill-row { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; background: var(--surface); }
+    .skill-row-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .skill-name { font-size: 13px; font-weight: 600; flex: 1; }
+    .skill-count { font-size: 11px; color: var(--text-soft); }
+    .progress-bar { height: 6px; background: var(--gray-bg); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+    .skill-meta { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--text-soft); }
+    .mastered-badge { font-size: 11px; color: var(--green); font-weight: 700; }
+    /* ── SECTION 4: SESSIONS ── */
+    .sessions-list { display: flex; flex-direction: column; gap: 10px; }
+    .session-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
+    .session-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+    .session-who { font-size: 12px; font-weight: 700; color: var(--text-soft); }
+    .session-when { font-size: 11px; color: var(--text-soft); }
+    .session-context { font-size: 11px; background: var(--surface-alt); padding: 2px 7px; border-radius: 10px; color: var(--text-soft); }
+    .session-main { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .session-detail { font-size: 13px; color: var(--text-soft); }
+    .session-detail strong { color: var(--text); }
+    .session-footer { display: flex; align-items: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .warn-flag { font-size: 11px; background: var(--yellow-bg); color: var(--yellow); border-radius: 10px; padding: 2px 8px; font-weight: 600; }
+    .empty-state { text-align: center; padding: 32px 16px; color: var(--text-soft); font-size: 14px; }
+    .empty-state .emoji { font-size: 36px; margin-bottom: 10px; }
+    /* ── HOW TO LOG ── */
+    .how-header { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .how-body { margin-top: 14px; display: none; }
+    .how-body.open { display: block; }
+    .template-block { background: var(--surface-alt); border-radius: var(--radius-sm); padding: 12px 14px; font-family: monospace; font-size: 12px; color: var(--text); margin-bottom: 10px; border-left: 3px solid var(--primary); white-space: pre-wrap; word-break: break-word; }
+    .template-example { font-size: 12px; color: var(--text-soft); margin-bottom: 14px; font-style: italic; padding-left: 4px; }
+    /* ── LOADING / ERROR ── */
+    #loading { text-align: center; padding: 60px 20px; color: var(--text-soft); }
+    .spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #error-msg { background: var(--red-bg); color: var(--red); border-radius: var(--radius); padding: 16px 18px; font-size: 14px; display: none; }
+    /* ── MOBILE TWEAKS ── */
+    @media (max-width: 380px) {
+      .focus-rules { grid-template-columns: 1fr; }
+      .card-body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="header-title">⭐ Omar's Dashboard</div>
+    <div class="header-date" id="header-date"></div>
+  </div>
+  <button id="btn-refresh" onclick="loadAll()">↻ Refresh</button>
+</header>
+
+<main>
+  <div id="loading">
+    <div class="spinner"></div>
+    Loading Omar's data…
+  </div>
+  <div id="error-msg"></div>
+  <div id="app" style="display:none; display:flex; flex-direction:column; gap:20px;"></div>
+</main>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const URLS = {
+  trials:  'https://docs.google.com/spreadsheets/d/e/2PACX-1vSauBLLM3_4WJUoGTZRVkL2OGYS2joYqfdsrE5fEgA6nG34_IWDHzjS9EkfNk3xoPfyOEjXo0pP0cyY/pub?gid=47686802&single=true&output=csv',
+  current: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSauBLLM3_4WJUoGTZRVkL2OGYS2joYqfdsrE5fEgA6nG34_IWDHzjS9EkfNk3xoPfyOEjXo0pP0cyY/pub?gid=1152629069&single=true&output=csv',
+  prompts: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSauBLLM3_4WJUoGTZRVkL2OGYS2joYqfdsrE5fEgA6nG34_IWDHzjS9EkfNk3xoPfyOEjXo0pP0cyY/pub?gid=2071094067&single=true&output=csv'
+};
+
+const DOMAINS = [
+  { key: 'Communication & Language', icon: '💬' },
+  { key: 'Social Interaction',       icon: '🤝' },
+  { key: 'School Readiness',         icon: '🎒' },
+  { key: 'Pretend & Flexible Play',  icon: '🎭' }
+];
+
+const SKILLS = {
+  'Communication & Language': [
+    { key: 'yes_no',             label: 'Yes / No Questions' },
+    { key: 'either_or',         label: 'Either / Or Choices' },
+    { key: 'who',               label: 'Who Questions' },
+    { key: 'what',              label: 'What Questions' },
+    { key: 'where',             label: 'Where Questions' },
+    { key: 'whose',             label: 'Whose Questions' },
+    { key: 'actions',           label: 'Action Questions' },
+    { key: 'discrimination_mix',label: 'Mixed Q Practice' },
+    { key: 'name_questions',    label: 'Name / Age Questions' },
+    { key: 'ask_for_help',      label: 'Asking for Help' },
+    { key: 'sentences',         label: '3+ Word Sentences' },
+    { key: 'echolalia',         label: 'Reducing Echolalia' }
+  ],
+  'Social Interaction': [
+    { key: 'name_response',  label: 'Responding to Name' },
+    { key: 'joint_attention',label: 'Joint Attention' },
+    { key: 'turn_taking',    label: 'Turn Taking' },
+    { key: 'peer_play',      label: 'Interactive Play' },
+    { key: 'commenting',     label: 'Commenting on Events' }
+  ],
+  'School Readiness': [
+    { key: 'instruction',      label: 'Following Instructions' },
+    { key: 'transition',       label: 'Handling Transitions' },
+    { key: 'sitting',          label: 'Sitting for Tasks' },
+    { key: 'independent_task', label: 'Independent Tasks' }
+  ],
+  'Pretend & Flexible Play': [
+    { key: 'pretend_play',      label: 'Pretend Play' },
+    { key: 'pretend_exchanges', label: 'Pretend Exchanges' },
+    { key: 'flexibility',       label: 'Flexibility' }
+  ]
+};
+
+const STAGE_LABELS = {
+  yes_no: 'Stage 1: Yes / No', either_or: 'Stage 2: Either / Or',
+  who: 'Stage 3: Who', what: 'Stage 4: What', where: 'Stage 5: Where',
+  whose: 'Stage 6: Whose', actions: 'Stage 7: Actions',
+  discrimination_mix: 'Stage 8: Mixed Trials'
+};
+
+const PROMPT_META = {
+  independent:      { label: 'Independent', cls: 'badge-green'  },
+  verbal_prompt:    { label: 'Verbal Prompt', cls: 'badge-yellow' },
+  partial_physical: { label: 'Physical Cue', cls: 'badge-orange' },
+  full_physical:    { label: 'Full Physical', cls: 'badge-red'   },
+  no_response:      { label: 'No Response',  cls: 'badge-gray'  }
+};
+
+const PROMPT_COLORS = {
+  independent: '#16a34a', verbal_prompt: '#ca8a04',
+  partial_physical: '#ea580c', full_physical: '#dc2626', no_response: '#94a3b8'
+};
+
+// ── CSV PARSER ───────────────────────────────────────────────────────────────
+function parseLine(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+    else cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 1) return [];
+  const headers = parseLine(lines[0]).map(h => h.trim());
+  return lines.slice(1).filter(l => l.trim()).map(l => {
+    const vals = parseLine(l);
+    const obj = {};
+    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());
+    return obj;
+  });
+}
+
+// ── FETCH ────────────────────────────────────────────────────────────────────
+async function fetchCSV(url) {
+  const fetchUrl = url + '&nocache=' + Date.now();
+
+  // Detect file:// protocol — fetch won't work, need a local server
+  if (window.location.protocol === 'file:') {
+    throw Object.assign(new Error('FILE_PROTOCOL'), { isFileProtocol: true });
+  }
+
+  let res;
+  try {
+    res = await fetch(fetchUrl);
+  } catch(e) {
+    throw new Error('NETWORK: ' + e.message);
+  }
+
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+
+  const text = await res.text();
+
+  // If Google redirected to a login/HTML page instead of CSV
+  if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+    throw new Error('NOT_CSV');
+  }
+
+  return parseCSV(text);
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+function relDay(iso) {
+  if (!iso) return '';
+  const d = new Date(iso); const now = new Date();
+  const diff = Math.floor((now - d) / 86400000);
+  if (diff === 0) return 'Today'; if (diff === 1) return 'Yesterday';
+  return diff + ' days ago';
+}
+function last7Days(rows) {
+  const cutoff = Date.now() - 7 * 86400000;
+  return rows.filter(r => new Date(r.timestamp) >= cutoff)
+             .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+}
+
+// ── SECTION 1: FOCUS ─────────────────────────────────────────────────────────
+function renderFocus(current) {
+  const c = current[0] || {};
+  const stageLabel = STAGE_LABELS[c.current_stage] || (c.current_stage || 'Not set');
+  return `
+  <div class="card" id="section-focus">
+    <div class="card-header">
+      <span class="icon">🎯</span>
+      <h2>This Week's Focus</h2>
+    </div>
+    <div class="card-body">
+      <div class="focus-stage">${stageLabel}</div>
+      <div class="focus-subtitle">${c.focus_this_week || '—'}</div>
+      <div class="focus-what">${c.what_we_are_trying || 'Update the <em>current</em> tab in your Google Sheet to set this week\'s focus.'}</div>
+      <div class="focus-rules">
+        <div class="focus-do">
+          <strong>✅ Do this</strong>
+          ${c.do_this || '—'}
+        </div>
+        <div class="focus-avoid">
+          <strong>🚫 Avoid</strong>
+          ${c.avoid_this || '—'}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── SECTION 2: PROMPTS ───────────────────────────────────────────────────────
+function renderPrompts(prompts, current) {
+  const currentStage = (current[0] || {}).current_stage || '';
+  const filtered = prompts.filter(p => p.stage === currentStage);
+  const domains = [...new Set(filtered.map(p => p.domain))];
+  const activeDomain = domains[0] || '';
+
+  const tabs = domains.map(d => {
+    const domainInfo = DOMAINS.find(x => x.key === d) || {};
+    return `<button class="domain-tab${d === activeDomain ? ' active' : ''}" onclick="switchDomain(this,'${d}')">${domainInfo.icon || ''} ${d.replace(' & ', ' &amp; ')}</button>`;
+  }).join('');
+
+  const cards = filtered.map((p, i) => {
+    const id = 'prompt-' + i;
+    return `
+    <div class="prompt-card" data-domain="${p.domain}" style="${p.domain !== activeDomain ? 'display:none' : ''}">
+      <div class="prompt-card-header" onclick="togglePrompt('${id}')">
+        <div class="prompt-situation">${p.situation}</div>
+        <div class="prompt-toggle" id="${id}-toggle">⌄</div>
+      </div>
+      <div class="prompt-card-body" id="${id}">
+        <div class="prompt-say">Say: <span>"${p.what_to_say}"</span></div>
+        <div class="prompt-target">Target answer: <strong>${p.target_answer}</strong></div>
+        ${p.notes ? `<div class="prompt-notes">💡 ${p.notes}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const empty = filtered.length === 0
+    ? `<div class="empty-state"><div class="emoji">📋</div>No prompts found for the current stage.<br>Check that <em>current_stage</em> in your sheet matches a value in the prompts tab.</div>`
+    : '';
+
+  return `
+  <div class="card" id="section-prompts">
+    <div class="card-header">
+      <span class="icon">📋</span>
+      <h2>Today's Prompt Cards</h2>
+      <span class="badge badge-primary">${filtered.length} prompts</span>
+    </div>
+    <div class="domain-tabs">${tabs}</div>
+    <div class="prompts-list">${cards}${empty}</div>
+  </div>`;
+}
+
+// ── SECTION 3: PROGRESS ──────────────────────────────────────────────────────
+function renderProgress(trials) {
+  const groups = DOMAINS.map(domain => {
+    const skillRows = (SKILLS[domain.key] || []).map(skill => {
+      const skillTrials = trials.filter(t => t.domain === domain.key && t.skill === skill.key && t.type === 'trial');
+      const total = skillTrials.length;
+      const indep = skillTrials.filter(t => t.prompt_level === 'independent').length;
+      const pct   = total > 0 ? Math.round((indep / total) * 100) : 0;
+      const loggers = [...new Set(skillTrials.map(t => t.logged_by).filter(Boolean))].length;
+      const mastered = total >= 3 && pct >= 80 && loggers >= 2;
+      const color = pct >= 80 ? PROMPT_COLORS.independent
+                  : pct >= 50 ? PROMPT_COLORS.verbal_prompt
+                  : pct >= 20 ? PROMPT_COLORS.partial_physical
+                  : total > 0 ? PROMPT_COLORS.full_physical
+                  : '#e2e8f0';
+
+      return `
+      <div class="skill-row">
+        <div class="skill-row-top">
+          <div class="skill-name">${skill.label}</div>
+          ${mastered ? '<div class="mastered-badge">⭐ Mastered</div>' : ''}
+          <div class="skill-count">${total} session${total !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%; background:${color}"></div>
+        </div>
+        <div class="skill-meta">
+          <span>${total > 0 ? pct + '% independent' : 'No sessions yet'}</span>
+          <span>${mastered ? 'Complete ✓' : total > 0 ? `${loggers} logger${loggers !== 1 ? 's' : ''} · need 80% + 2 people` : '—'}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    const domainId = 'domain-' + domain.key.replace(/\W+/g, '-');
+    return `
+    <div class="domain-group">
+      <div class="domain-group-header open" id="${domainId}-hdr" onclick="toggleDomain('${domainId}')">
+        <span class="domain-icon">${domain.icon}</span>
+        <span class="domain-name">${domain.key}</span>
+        <span class="domain-chevron">⌄</span>
+      </div>
+      <div class="skill-list" id="${domainId}-body">${skillRows}</div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="card" id="section-progress">
+    <div class="card-header">
+      <span class="icon">📈</span>
+      <h2>Skills Progress</h2>
+    </div>
+    <div class="card-body">${groups}</div>
+  </div>`;
+}
+
+// ── SECTION 4: SESSIONS ──────────────────────────────────────────────────────
+function renderSessions(trials) {
+  const recent = last7Days(trials);
+
+  if (recent.length === 0) {
+    return `
+    <div class="card" id="section-sessions">
+      <div class="card-header"><span class="icon">📅</span><h2>Last 7 Days</h2></div>
+      <div class="card-body">
+        <div class="empty-state">
+          <div class="emoji">🌱</div>
+          No sessions logged in the last 7 days yet.<br>Send your first message to the Telegram bot to get started!
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const cards = recent.map(t => {
+    const pm   = PROMPT_META[t.prompt_level] || {};
+    const isObs = t.type === 'obs';
+    const mainText = isObs
+      ? (t.actual_response || t.skill)
+      : (t.question_asked ? `Q: ${t.question_asked}` : t.skill);
+    const detail = isObs
+      ? (t.count ? `${t.count} time${t.count > 1 ? 's' : ''}` : '')
+      : (t.actual_response ? `Omar said: <strong>${t.actual_response}</strong>` : '');
+    const domainInfo = DOMAINS.find(d => d.key === t.domain) || {};
+
+    return `
+    <div class="session-card">
+      <div class="session-top">
+        <span class="session-who">${t.logged_by || 'Unknown'}</span>
+        <span class="session-when">${relDay(t.timestamp)}</span>
+        ${t.context ? `<span class="session-context">${t.context}</span>` : ''}
+      </div>
+      <div class="session-main">${domainInfo.icon || ''} ${t.domain || '—'} · ${t.skill || '—'}</div>
+      ${mainText ? `<div class="session-detail">${mainText}</div>` : ''}
+      ${detail   ? `<div class="session-detail">${detail}</div>` : ''}
+      <div class="session-footer">
+        ${pm.cls ? `<span class="badge ${pm.cls}">${pm.label}</span>` : ''}
+        ${t.regulated === 'false' ? '<span class="badge badge-orange">Tricky mood</span>' : ''}
+        ${t.low_confidence === 'true' ? '<span class="warn-flag">⚠️ Check category</span>' : ''}
+        ${isObs ? '<span class="badge badge-gray">Observation</span>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="card" id="section-sessions">
+    <div class="card-header">
+      <span class="icon">📅</span>
+      <h2>Last 7 Days</h2>
+      <span class="badge badge-primary">${recent.length} logged</span>
+    </div>
+    <div class="card-body">
+      <div class="sessions-list">${cards}</div>
+    </div>
+  </div>`;
+}
+
+// ── HOW TO LOG ────────────────────────────────────────────────────────────────
+function renderHowToLog() {
+  return `
+  <div class="card" id="section-how">
+    <div class="card-header how-header" onclick="toggleHow()">
+      <span class="icon">💬</span>
+      <h2>How to Log a Session</h2>
+      <span class="prompt-toggle" id="how-toggle">⌄</span>
+    </div>
+    <div class="how-body" id="how-body">
+      <div class="card-body">
+        <p style="font-size:13px; color:var(--text-soft); margin-bottom:12px">Send a text message to the Omar bot on Telegram using one of these two formats:</p>
+        <p style="font-size:12px; font-weight:700; margin-bottom:6px">For a Q&amp;A trial:</p>
+        <div class="template-block">[Who] | [When/Where] | Q: [question you asked] | A: [what Omar said] | Help: [none/word/hand] | Mood: [calm/tricky]</div>
+        <div class="template-example">e.g. Baba | breakfast | Q: do you want crackers? | A: yes | Help: none | Mood: calm</div>
+        <p style="font-size:12px; font-weight:700; margin-bottom:6px">For an observation:</p>
+        <div class="template-block">[Who] | [When/Where] | Saw: [what happened] | Count: [number or -] | Mood: [calm/tricky]</div>
+        <div class="template-example">e.g. Mama | park | Saw: he pointed at a plane and looked at me | Count: 2 | Mood: calm</div>
+        <p style="font-size:12px; color:var(--text-soft)">The bot will reply with a summary — reply <em>fix</em> if anything looks wrong.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── INTERACTION ───────────────────────────────────────────────────────────────
+function togglePrompt(id) {
+  const body = document.getElementById(id);
+  const tog  = document.getElementById(id + '-toggle');
+  if (!body) return;
+  body.classList.toggle('open');
+  tog.classList.toggle('open');
+}
+function switchDomain(btn, domain) {
+  const card = btn.closest('.card');
+  card.querySelectorAll('.domain-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  card.querySelectorAll('.prompt-card').forEach(c => {
+    c.style.display = c.dataset.domain === domain ? '' : 'none';
+  });
+}
+function toggleDomain(id) {
+  const hdr  = document.getElementById(id + '-hdr');
+  const body = document.getElementById(id + '-body');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : '';
+  hdr.classList.toggle('open', !open);
+}
+function toggleHow() {
+  const body = document.getElementById('how-body');
+  const tog  = document.getElementById('how-toggle');
+  body.classList.toggle('open');
+  tog.classList.toggle('open');
+}
+
+// ── MAIN ─────────────────────────────────────────────────────────────────────
+async function loadAll() {
+  const loading = document.getElementById('loading');
+  const errEl   = document.getElementById('error-msg');
+  const app     = document.getElementById('app');
+
+  loading.style.display = 'block';
+  errEl.style.display   = 'none';
+  app.style.display     = 'none';
+
+  try {
+    const [current, prompts, trials] = await Promise.all([
+      fetchCSV(URLS.current),
+      fetchCSV(URLS.prompts),
+      fetchCSV(URLS.trials)
+    ]);
+
+    app.innerHTML =
+      renderFocus(current) +
+      renderPrompts(prompts, current) +
+      renderProgress(trials) +
+      renderSessions(trials) +
+      renderHowToLog();
+
+    loading.style.display = 'none';
+    app.style.display     = 'flex';
+  } catch(e) {
+    loading.style.display = 'none';
+    errEl.style.display   = 'block';
+    if (e.isFileProtocol) {
+      errEl.innerHTML = `
+        <strong>📂 Open via a local server, not directly from your desktop.</strong><br><br>
+        Your browser blocks external requests from <code>file://</code> pages.<br><br>
+        <strong>Quick fix — run this in Terminal from your Omar folder:</strong><br>
+        <code style="display:block;margin:8px 0;padding:8px;background:rgba(0,0,0,0.08);border-radius:6px">python3 -m http.server 8080</code>
+        Then open <a href="http://localhost:8080" style="color:var(--primary)">http://localhost:8080</a> in your browser.<br><br>
+        <em>This will work perfectly once deployed to Cloudflare Pages (Phase 4).</em>`;
+    } else if (e.message === 'NOT_CSV') {
+      errEl.innerHTML = `<strong>⚠️ Google Sheet returned a login page instead of CSV.</strong><br><br>
+        Make sure each tab is published: <em>File → Share → Publish to web → select tab → CSV → Publish</em>.`;
+    } else {
+      errEl.innerHTML = `<strong>Could not load data.</strong> ${e.message}<br><br>
+        Check your internet connection and that all three Google Sheet tabs are published as CSV.`;
+    }
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.getElementById('header-date').textContent =
+  new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+loadAll();
+</script>
+</body>
+</html>
