@@ -172,6 +172,21 @@
       .card-body { padding: 14px; }
     }
   
+
+    /* ── AUTO FOCUS CARD ── */
+    .focus-auto-label { font-size:11px; color:var(--text-soft); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; font-weight:600; }
+    .focus-skill-name { font-size:22px; font-weight:800; color:var(--primary); line-height:1.2; }
+    .focus-domain { font-size:12px; color:var(--text-soft); margin-bottom:6px; }
+    .focus-reason { font-size:13px; color:var(--text); background:var(--primary-bg); border-radius:var(--radius-sm); padding:6px 10px; margin-bottom:14px; font-weight:600; }
+    .focus-override { display:flex; align-items:center; gap:8px; background:var(--yellow-bg); border:1px solid #fde68a; border-radius:var(--radius-sm); padding:8px 12px; margin-bottom:14px; font-size:13px; }
+    .focus-override-label { font-size:11px; font-weight:700; color:var(--yellow); white-space:nowrap; }
+    .focus-also { margin-top:14px; }
+    .focus-also-label { font-size:11px; color:var(--text-soft); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:block; }
+    .focus-chips { display:flex; flex-direction:column; gap:5px; }
+    .focus-chip { display:flex; align-items:center; justify-content:space-between; background:var(--gray-bg); border-radius:var(--radius-sm); padding:6px 10px; font-size:13px; font-weight:600; }
+    .focus-chip-reason { font-size:11px; color:var(--text-soft); font-weight:400; }
+    .focus-update-hint { font-size:12px; color:var(--text-soft); margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+
     /* ── SKILL DETAIL EXPAND ── */
     .sk-expand-btn {
       background: var(--primary-bg); border: 1px solid var(--border);
@@ -369,26 +384,74 @@ function last7Days(rows) {
              .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
 
+// ── AUTO-FOCUS ALGORITHM ─────────────────────────────────────────────────────
+function suggestFocus(trials, prompts) {
+  const sevenDaysAgo = Date.now() - 7 * 86400000;
+  const candidates = [];
+  for (const [domain, skills] of Object.entries(SKILLS)) {
+    for (const skill of skills) {
+      const allEntries   = trials.filter(t => t.domain === domain && t.skill === skill.key);
+      const trialEntries = allEntries.filter(t => t.type === 'trial');
+      const recent7      = allEntries.filter(t => new Date(t.timestamp) >= sevenDaysAgo);
+      const indep = trialEntries.filter(t => t.prompt_level === 'independent').length;
+      const pct   = trialEntries.length > 0 ? Math.round(indep / trialEntries.length * 100) : 0;
+      const loggers = new Set(allEntries.map(t => t.logged_by).filter(Boolean)).size;
+      if (trialEntries.length >= 3 && pct >= 80 && loggers >= 2) continue; // mastered
+      let priority = 0, reason = '';
+      if      (recent7.length > 0 && pct >= 50 && pct < 80 && trialEntries.length >= 2) { priority = 100; reason = pct + '% independent — almost there 🔥'; }
+      else if (recent7.length >= 2 && trialEntries.length > 0)                           { priority = 70;  reason = recent7.length + ' sessions this week · ' + pct + '% independent'; }
+      else if (recent7.length > 0)                                                        { priority = 55;  reason = 'Active this week · keep the momentum'; }
+      else if (trialEntries.length >= 2 && pct < 50)                                     { priority = 40;  reason = pct + '% independent · needs regular practice'; }
+      else if (allEntries.length > 0)                                                     { priority = 20;  reason = allEntries.length + ' session' + (allEntries.length > 1 ? 's' : '') + ' logged'; }
+      else                                                                                { priority = 5;   reason = 'Not started yet'; }
+      const sp = prompts.filter(p => p.stage === skill.key);
+      candidates.push({ domain, skill, pct, priority, reason,
+        doThis: sp.length > 0 ? '"' + sp[0].what_to_say + '"' : '—',
+        avoidThis: sp.length > 0 ? sp[0].notes : '—',
+        recentCount: recent7.length });
+    }
+  }
+  candidates.sort((a, b) => b.priority - a.priority || b.pct - a.pct || b.recentCount - a.recentCount);
+  return candidates.slice(0, 3);
+}
+
 // ── SECTION 1: FOCUS ─────────────────────────────────────────────────────────
-function renderFocus(current) {
+function renderFocus(current, trials, prompts) {
   const c = current[0] || {};
-  const stageLabel = STAGE_LABELS[c.current_stage] || (c.current_stage || 'Not set');
-  return `
+  const hasOverride = !!(c.focus_this_week && c.current_stage);
+  const suggestions = suggestFocus(trials, prompts);
+  const top = suggestions[0];
+
+  const overrideBanner = hasOverride ? `<div class="focus-override"><span class="focus-override-label">📌 Family note</span><span>${c.focus_this_week}</span></div>` : '';
+
+  const topCard = top ? `
+    <div class="focus-skill-name">${top.skill.label}</div>
+    <div class="focus-domain">${top.domain}</div>
+    <div class="focus-reason">${top.reason}</div>
+    <div class="focus-rules">
+      <div class="focus-do"><strong>✅ Try this</strong><br>${top.doThis}</div>
+      <div class="focus-avoid"><strong>💡 Remember</strong><br>${top.avoidThis}</div>
+    </div>` : `<div style="color:var(--text-soft);font-size:14px;padding:10px 0">Log your first session to get a personalised focus suggestion.</div>`;
+
+  const chips = suggestions.slice(1).map(s =>
+    `<div class="focus-chip"><span>${s.skill.label}</span><span class="focus-chip-reason">${s.reason}</span></div>`
+  ).join('');
+
+  return \`
   <div class="card" id="section-focus">
     <div class="card-header">
       <span class="icon">🎯</span>
       <h2>This Week's Focus</h2>
+      <span class="badge badge-primary" style="font-size:11px">Auto-updated</span>
     </div>
     <div class="card-body">
-      <div class="focus-stage">${stageLabel}</div>
-      <div class="focus-subtitle">${c.focus_this_week || '—'}</div>
-      <div class="focus-what">${c.what_we_are_trying || 'Update the <em>current</em> tab in your Google Sheet to set this week\'s focus.'}</div>
-      <div class="focus-rules">
-        <div class="focus-do"><strong>✅ Do this</strong>${c.do_this || '—'}</div>
-        <div class="focus-avoid"><strong>🚫 Avoid</strong>${c.avoid_this || '—'}</div>
-      </div>
+      \${overrideBanner}
+      <div class="focus-auto-label">Suggested from your session data</div>
+      \${topCard}
+      \${chips ? \`<div class="focus-also"><span class="focus-also-label">Also consider</span><div class="focus-chips">\${chips}</div></div>\` : ''}
+      <div class="focus-update-hint">💬 Text the bot <em>"focus: [skill]"</em> to pin a manual note · Weekly review sent every Sunday</div>
     </div>
-  </div>`;
+  </div>\`;
 }
 
 // ── SECTION 2: PROMPTS ───────────────────────────────────────────────────────
