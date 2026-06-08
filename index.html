@@ -445,7 +445,7 @@ function renderFocus(current, trials, prompts) {
     `<div class="focus-chip"><span>${s.skill.label}</span><span class="focus-chip-reason">${s.reason}</span></div>`
   ).join('');
 
-  return \`
+  return `
   <div class="card" id="section-focus">
     <div class="card-header">
       <span class="icon">🎯</span>
@@ -453,13 +453,13 @@ function renderFocus(current, trials, prompts) {
       <span class="badge badge-primary" style="font-size:11px">Auto-updated</span>
     </div>
     <div class="card-body">
-      \${overrideBanner}
+      ${overrideBanner}
       <div class="focus-auto-label">Suggested from your session data</div>
-      \${topCard}
-      \${chips ? \`<div class="focus-also"><span class="focus-also-label">Also consider</span><div class="focus-chips">\${chips}</div></div>\` : ''}
+      ${topCard}
+      ${chips ? `<div class="focus-also"><span class="focus-also-label">Also consider</span><div class="focus-chips">${chips}</div></div>` : ''}
       <div class="focus-update-hint">💬 Text the bot <em>"focus: [skill]"</em> to pin a manual note · Weekly review sent every Sunday</div>
     </div>
-  </div>\`;
+  </div>`;
 }
 
 // ── SECTION 2: PROMPTS ───────────────────────────────────────────────────────
