@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TK Readiness Tracker · Omar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;600;700;800&display=swap');
+
+  :root {
+    --mint:     #4ecdc4;
+    --coral:    #ff6b6b;
+    --sun:      #ffd93d;
+    --sky:      #a8dadc;
+    --lavender: #c3b1e1;
+    --bg:       #fdf8f2;
+    --card:     #ffffff;
+    --text:     #2c1f0e;
+    --muted:    #7a6248;
+    --border:   #ead9c8;
+    --primary:  #c2690a;
+    --primary-bg: #fff4e6;
+    --radius:   16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── SHARED NAV ──────────────────────────────── */
+  .site-nav {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    position: sticky; top: 0; z-index: 20;
+  }
+  .site-nav-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .site-nav-inner::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 12px 18px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: .88rem;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all .15s;
+    display: block;
+  }
+  .nav-tab:hover { color: var(--primary); }
+  .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* ── HEADER ──────────────────────────────────── */
+  header {
+    background: linear-gradient(135deg, #4ecdc4 0%, #a8dadc 50%, #c3b1e1 100%);
+    padding: 28px 24px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  header h1 {
+    font-family: 'Baloo 2', cursive;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,.15);
+    position: relative;
+  }
+  header p {
+    color: rgba(255,255,255,.9);
+    margin-top: 4px;
+    font-size: .9rem;
+    font-weight: 600;
+    position: relative;
+  }
+  .header-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    position: relative;
+    flex-wrap: wrap;
+  }
+  .saved-badge {
+    background: rgba(255,255,255,.2);
+    color: white;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,.3);
+  }
+  .btn-print {
+    background: rgba(255,255,255,.2);
+    color: white;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,.3);
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: background .15s;
+  }
+  .btn-print:hover { background: rgba(255,255,255,.35); }
+  .btn-reset {
+    background: rgba(255,100,100,.25);
+    color: white;
+    font-size: .78rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,100,100,.3);
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: background .15s;
+  }
+  .btn-reset:hover { background: rgba(255,100,100,.4); }
+
+  /* ── TABS ────────────────────────────────────── */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    padding: 20px 20px 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    border: none;
+    border-radius: 12px 12px 0 0;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: all .2s;
+    background: #e0e7ef;
+    color: var(--muted);
+  }
+  .tab.active { background: white; color: var(--text); box-shadow: 0 -2px 8px rgba(0,0,0,.06); }
+  .tab:hover:not(.active) { background: #d0dae6; }
+
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── SECTION CARDS ───────────────────────────── */
+  .section-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    margin-top: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid var(--border);
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+  }
+  .section-header:hover { background: #fef4e8; }
+  .section-icon { font-size: 1.4rem; }
+  .section-title {
+    flex: 1;
+    font-family: 'Baloo 2', cursive;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .section-badge {
+    font-size: .78rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #eef2f7;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .section-badge.done { background: #d4f5f0; color: #2d9b8a; }
+  .chevron { font-size: .8rem; color: var(--muted); transition: transform .2s; }
+  .section-card.open .chevron { transform: rotate(180deg); }
+
+  .items-grid {
+    display: none;
+    padding: 14px 18px 18px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .section-card.open .items-grid { display: flex; }
+
+  /* ── CHECKLIST ITEMS ─────────────────────────── */
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f7f9fc;
+    cursor: pointer;
+    transition: all .15s;
+    width: 100%;
+    border: 2px solid transparent;
+  }
+  .item:hover { background: #fef4e8; }
+  .item.checked { background: #edfaf7; border-color: var(--mint); }
+  .item input[type=checkbox] { display: none; }
+  .checkmark {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2.5px solid #c0cdd8;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem;
+    transition: all .15s;
+    margin-top: 1px;
+  }
+  .item.checked .checkmark { background: var(--mint); border-color: var(--mint); color: white; }
+  .item-text { font-size: .9rem; line-height: 1.4; flex: 1; }
+  .item-tag {
+    font-size: .7rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-left: auto;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+  .tag-critical { background: #ffe3e3; color: #c0392b; }
+  .tag-social   { background: #e3f0ff; color: #1d6fa4; }
+  .tag-language { background: #f0e3ff; color: #7d3fc8; }
+  .tag-self     { background: #fff4e3; color: #b07d00; }
+
+  /* ── WORD GRID ───────────────────────────────── */
+  .word-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    background: white;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid var(--border);
+  }
+  .word-controls span { font-weight: 700; font-size: .9rem; color: var(--muted); }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 2px solid #e0e7ef;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: all .15s;
+    color: var(--muted);
+  }
+  .filter-btn.active { border-color: var(--mint); color: #2d9b8a; background: #edfaf7; }
+  .filter-btn:hover:not(.active) { border-color: #c0cdd8; }
+
+  .word-progress {
+    margin-top: 12px;
+    background: white;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .progress-bar-wrap {
+    flex: 1;
+    min-width: 200px;
+    height: 14px;
+    background: #eef2f7;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--mint), var(--sky));
+    transition: width .4s ease;
+  }
+  .progress-label { font-weight: 800; font-size: .95rem; white-space: nowrap; }
+  .progress-label span { color: var(--mint); }
+
+  .legend {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 12px; font-size: .82rem; font-weight: 700; color: var(--muted);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; border: 2px solid; }
+  .dot-none    { border-color: #c0cdd8; background: white; }
+  .dot-working { border-color: var(--sun); background: #fffae3; }
+  .dot-knows   { border-color: var(--mint); background: #edfaf7; }
+
+  .word-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .word-tile {
+    background: white;
+    border: 2.5px solid #e0e7ef;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .95rem;
+    transition: all .15s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  }
+  .word-tile:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+  .word-tile.knows   { background: #edfaf7; border-color: var(--mint); color: #2d9b8a; }
+  .word-tile.working { background: #fffae3; border-color: var(--sun);  color: #917500; }
+  .word-category-label {
+    font-size: .65rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .04em; color: #a0aab4;
+  }
+  .word-tile.knows   .word-category-label { color: #7dcfc8; }
+  .word-tile.working .word-category-label { color: #c8aa50; }
+
+  /* ── OVERVIEW ────────────────────────────────── */
+  .overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-top: 16px; }
+  .stat-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid var(--border);
+  }
+  .stat-number { font-family: 'Baloo 2', cursive; font-size: 2.2rem; font-weight: 800; line-height: 1; }
+  .stat-label  { font-size: .82rem; font-weight: 700; color: var(--muted); margin-top: 4px; }
+
+  .overall-bar-wrap {
+    margin-top: 16px;
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    border: 1px solid var(--border);
+  }
+  .overall-bar-label { font-weight: 800; font-size: 1rem; margin-bottom: 10px; }
+  .overall-bar-label span { color: var(--primary); }
+  .overall-bar-bg { height: 18px; background: #eef2f7; border-radius: 99px; overflow: hidden; }
+  .overall-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--mint), var(--primary));
+    transition: width .5s ease;
+  }
+  .overall-bar-sub { font-size: .82rem; color: var(--muted); margin-top: 6px; font-weight: 600; }
+
+  /* ── NOTE BOX ────────────────────────────────── */
+  .note-box {
+    background: #fff8e3;
+    border-left: 4px solid var(--sun);
+    border-radius: 0 10px 10px 0;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-size: .88rem;
+    line-height: 1.6;
+    color: #7a6000;
+    font-weight: 600;
+  }
+  .note-box strong { color: #5a4500; }
+  .note-box.info { background: #edfaf7; border-color: var(--mint); color: #1d6b5f; }
+  .note-box.info strong { color: #0d4a3f; }
+
+  /* ── PRINT ───────────────────────────────────── */
+  @media print {
+    .site-nav, .tabs, .btn-print, .btn-reset, .word-controls, .filter-btn, header .header-meta { display: none !important; }
+    .panel { display: block !important; }
+    .items-grid { display: flex !important; }
+    body { background: white; }
+    .section-card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+    header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  @media (max-width: 500px) {
+    header h1 { font-size: 1.4rem; }
+    .word-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    .tabs { gap: 4px; }
+    .tab { font-size: .78rem; padding: 10px 4px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SHARED NAV ──────────────────────────────────────────────────────── -->
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a href="index.html" class="nav-tab">⭐ Omar's Dashboard</a>
+    <a href="tk-readiness.html" class="nav-tab active">🌟 TK Readiness</a>
+  </div>
+</nav>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────────── -->
+<header>
+  <h1>🌟 TK Readiness Tracker</h1>
+  <p>Language &amp; Communication Focus · ASD-Informed</p>
+  <div class="header-meta">
+    <span class="saved-badge" id="saved-badge">No saved data yet</span>
+    <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+    <button class="btn-reset" onclick="confirmReset()">↺ Reset</button>
+  </div>
+</header>
+
+<!-- ── PANEL TABS ──────────────────────────────────────────────────────── -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('skills')">📋 TK Skills</button>
+  <button class="tab" onclick="switchTab('words')">🔤 Top 100 Words</button>
+  <button class="tab" onclick="switchTab('overview')">📊 Overview</button>
+</div>
+
+<div class="content">
+
+  <!-- ══ SKILLS PANEL ══ -->
+  <div id="panel-skills" class="panel active">
+
+    <div class="note-box">
+      <strong>💡 ASD tip:</strong> Check off skills your child demonstrates consistently (not just once).
+      Partial credit counts — functional communication matters more than perfect form.
+      Progress is saved automatically to this device.
+    </div>
+
+    <div class="section-card open" id="sec-commands">
+      <div class="section-header" onclick="toggleSection('sec-commands')">
+        <span class="section-icon">🗣️</span>
+        <span class="section-title">Understanding Common Commands</span>
+        <span class="section-badge" id="badge-sec-commands">0 / 12</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="items-grid">
+        <label class="item" data-key="cmd-1" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Follows 1-step directions ("Sit down," "Come here," "Stop")</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="cmd-2" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Follows 2-step directions ("Get your backpack and sit at the table")</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="cmd-3" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Responds to "Line up" / "Find your spot"</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="cmd-4" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Understands "Wait" and "Not yet"</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="cmd-5" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Responds to "Look at me" or "Eyes on me"</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="cmd-6" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Understands "Raise your hand"</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="cmd-7" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Responds to own name being called</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="cmd-8" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Understands "Clean up" / "Put it away"</span><span class="item-tag tag-self">Self-care</span></label>
+        <label class="item" data-key="cmd-9" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Understands "Quiet voice" / "Inside voice"</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="cmd-10" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Responds to "Finish up" or "One more minute"</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="cmd-11" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Understands "Time to switch" / transitions</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="cmd-12" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Understands "Share" and "Take turns"</span><span class="item-tag tag-social">Social</span></label>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-express">
+      <div class="section-header" onclick="toggleSection('sec-express')">
+        <span class="section-icon">💬</span>
+        <span class="section-title">Must-Know Words &amp; Phrases to Express</span>
+        <span class="section-badge" id="badge-sec-express">0 / 14</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="items-grid">
+        <label class="item" data-key="exp-1" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "Help" or "I need help"</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="exp-2" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "Yes" and "No" (or nods/shakes head)</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="exp-3" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "More" or "All done"</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="exp-4" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can say/sign own name</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="exp-5" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "I want ___" or points to request</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="exp-6" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "Excuse me" or taps to get attention</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="exp-7" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Communicates bathroom needs ("potty," "bathroom")</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="exp-8" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "I don't know" / "I don't understand"</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="exp-9" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "Stop" or "No thank you" (boundaries)</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="exp-10" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "My turn" or "Can I have a turn?"</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="exp-11" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Greets with "Hi" / "Bye"</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="exp-12" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Uses "Please" and "Thank you" (prompted is fine)</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="exp-13" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can say body feels: "hurt," "hungry," "tired," "scared"</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="exp-14" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Says "I don't like that" (instead of acting out)</span><span class="item-tag tag-language">Language</span></label>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-questions">
+      <div class="section-header" onclick="toggleSection('sec-questions')">
+        <span class="section-icon">❓</span>
+        <span class="section-title">Common Teacher Questions to Understand</span>
+        <span class="section-badge" id="badge-sec-questions">0 / 12</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="items-grid">
+        <label class="item" data-key="q-1"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"What is your name?" — can respond</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="q-2"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"How old are you?" — can hold up fingers or say number</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="q-3"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"Do you need to go potty?" — can answer yes/no</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="q-4"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"Are you okay?" — can respond meaningfully</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="q-5"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"What do you want?" / "What do you need?" — can respond</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="q-6"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"Can you show me?" — follows or responds</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="q-7"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"Which one?" / "What color?" — can point or answer</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="q-8"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"Are you finished?" — can respond</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="q-9"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"Can you try?" / "Will you try?" — understands prompt</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="q-10" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"Where does this go?" — can respond or attempt</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="q-11" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"Who is that?" / "What is that?" — responds to WH-questions</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="q-12" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">"How do you feel?" — responds or points to feelings chart</span><span class="item-tag tag-social">Social</span></label>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-social">
+      <div class="section-header" onclick="toggleSection('sec-social')">
+        <span class="section-icon">🤝</span>
+        <span class="section-title">Social Communication Skills</span>
+        <span class="section-badge" id="badge-sec-social">0 / 10</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="items-grid">
+        <label class="item" data-key="soc-1"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Makes eye contact or joint attention with teacher</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="soc-2"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Takes turns in simple back-and-forth interaction</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="soc-3"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Plays near (or with) other kids without conflict</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="soc-4"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can wait 1–2 minutes for a turn</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="soc-5"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Stays in designated area / doesn't wander</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="soc-6"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Accepts "no" without extended meltdown (most times)</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="soc-7"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can join a group activity (even briefly)</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="soc-8"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Recognizes familiar adults vs. strangers</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="soc-9"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Engages in parallel play (playing alongside others)</span><span class="item-tag tag-social">Social</span></label>
+        <label class="item" data-key="soc-10" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Shows/shares something with an adult</span><span class="item-tag tag-social">Social</span></label>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-self">
+      <div class="section-header" onclick="toggleSection('sec-self')">
+        <span class="section-icon">🌱</span>
+        <span class="section-title">Self-Care &amp; Independence</span>
+        <span class="section-badge" id="badge-sec-self">0 / 10</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="items-grid">
+        <label class="item" data-key="self-1"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Toilet trained (accidents may happen, that's okay)</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="self-2"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can wash hands with minimal prompting</span><span class="item-tag tag-self">Self-care</span></label>
+        <label class="item" data-key="self-3"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can eat lunch independently</span><span class="item-tag tag-self">Self-care</span></label>
+        <label class="item" data-key="self-4"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can open/close backpack, lunch box</span><span class="item-tag tag-self">Self-care</span></label>
+        <label class="item" data-key="self-5"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can put on/take off jacket</span><span class="item-tag tag-self">Self-care</span></label>
+        <label class="item" data-key="self-6"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Tolerates being in a classroom for 30+ minutes</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="self-7"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can sit for a short group activity (circle time)</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="self-8"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Separates from caregiver without extreme distress</span><span class="item-tag tag-critical">Critical</span></label>
+        <label class="item" data-key="self-9"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can identify own belongings</span><span class="item-tag tag-self">Self-care</span></label>
+        <label class="item" data-key="self-10" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Manages sensory environment (or has coping strategy)</span><span class="item-tag tag-critical">Critical</span></label>
+      </div>
+    </div>
+
+    <div class="section-card" id="sec-academic">
+      <div class="section-header" onclick="toggleSection('sec-academic')">
+        <span class="section-icon">📚</span>
+        <span class="section-title">Early Academic Concepts</span>
+        <span class="section-badge" id="badge-sec-academic">0 / 10</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="items-grid">
+        <label class="item" data-key="acad-1"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Recognizes own name in print</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-2"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Names basic colors (red, blue, green, yellow)</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-3"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Names basic shapes (circle, square, triangle)</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-4"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Counts 1–5 objects (even by pointing)</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-5"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Recognizes a few letters (especially name letters)</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-6"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Understands position words: in, on, under, next to</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-7"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Understands "same" and "different"</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-8"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Can sort objects by color or shape</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-9"  onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Listens to a short story and answers 1 question</span><span class="item-tag tag-language">Language</span></label>
+        <label class="item" data-key="acad-10" onclick="toggleItem(this)"><span class="checkmark"></span><span class="item-text">Holds a pencil/crayon and attempts to draw</span><span class="item-tag tag-self">Self-care</span></label>
+      </div>
+    </div>
+  </div><!-- /panel-skills -->
+
+  <!-- ══ WORDS PANEL ══ -->
+  <div id="panel-words" class="panel">
+
+    <div class="word-progress">
+      <div>
+        <div class="progress-label">Knows: <span id="knows-count">0</span> · Working: <span id="working-count" style="color:var(--sun)">0</span> / 100</div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="word-progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot dot-none"></div>Not yet</div>
+      <div class="legend-item"><div class="legend-dot dot-working"></div>Working on it (tap once)</div>
+      <div class="legend-item"><div class="legend-dot dot-knows"></div>Knows it (tap twice)</div>
+    </div>
+
+    <div class="word-controls">
+      <span>Filter:</span>
+      <button class="filter-btn active" onclick="filterWords('all', this)">All 100</button>
+      <button class="filter-btn" onclick="filterWords('not-yet', this)">Not yet</button>
+      <button class="filter-btn" onclick="filterWords('working', this)">Working on it</button>
+      <button class="filter-btn" onclick="filterWords('knows', this)">Knows it ✓</button>
+    </div>
+
+    <div class="word-grid" id="word-grid"></div>
+
+  </div><!-- /panel-words -->
+
+  <!-- ══ OVERVIEW PANEL ══ -->
+  <div id="panel-overview" class="panel">
+
+    <div class="overview">
+      <div class="stat-card" style="border-top:4px solid var(--mint)">
+        <div class="stat-number" id="ov-skills-done" style="color:var(--mint)">0</div>
+        <div class="stat-label">TK Skills Checked</div>
+      </div>
+      <div class="stat-card" style="border-top:4px solid var(--coral)">
+        <div class="stat-number" id="ov-skills-total" style="color:var(--coral)">68</div>
+        <div class="stat-label">Total TK Skills</div>
+      </div>
+      <div class="stat-card" style="border-top:4px solid var(--sky)">
+        <div class="stat-number" id="ov-words-knows" style="color:#2d9b8a">0</div>
+        <div class="stat-label">Words: Knows</div>
+      </div>
+      <div class="stat-card" style="border-top:4px solid var(--sun)">
+        <div class="stat-number" id="ov-words-working" style="color:#917500">0</div>
+        <div class="stat-label">Words: Working On</div>
+      </div>
+    </div>
+
+    <div class="overall-bar-wrap">
+      <div class="overall-bar-label">Overall TK Skills Progress: <span id="ov-pct">0%</span></div>
+      <div class="overall-bar-bg">
+        <div class="overall-bar-fill" id="ov-bar" style="width:0%"></div>
+      </div>
+      <div class="overall-bar-sub" id="ov-sub">Check off skills as Omar demonstrates them consistently.</div>
+    </div>
+
+    <div class="note-box info" style="margin-top:20px">
+      <strong>📣 Remember:</strong> For ASD kids, functional communication matters more than quantity.
+      If Omar can reliably request help, express needs, and respond to his name and key safety commands,
+      that's an enormous foundation. Work with his IEP team on AAC supports if verbal speech is limited.
+    </div>
+
+    <div class="note-box" style="margin-top:12px">
+      <strong>🏫 Share with school:</strong> Print this checklist (🖨️ button above) and bring it to his TK teacher
+      and paraeducators. Identifying which commands he knows vs. needs visual support for will help them
+      prep the right scaffolding before Day 1.
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+// ── WORDS DATA ────────────────────────────────────────────────────────────────
+const words = [
+  {w:"mom",cat:"People"},{w:"dad",cat:"People"},{w:"baby",cat:"People"},
+  {w:"me / I",cat:"People"},{w:"you",cat:"People"},{w:"teacher",cat:"People"},
+  {w:"friend",cat:"People"},{w:"boy",cat:"People"},{w:"girl",cat:"People"},
+  {w:"eyes",cat:"Body"},{w:"nose",cat:"Body"},{w:"mouth",cat:"Body"},
+  {w:"hand",cat:"Body"},{w:"foot",cat:"Body"},{w:"belly",cat:"Body"},
+  {w:"red",cat:"Color"},{w:"blue",cat:"Color"},{w:"green",cat:"Color"},
+  {w:"yellow",cat:"Color"},{w:"black",cat:"Color"},{w:"white",cat:"Color"},
+  {w:"pink",cat:"Color"},{w:"orange",cat:"Color"},
+  {w:"one",cat:"Number"},{w:"two",cat:"Number"},{w:"three",cat:"Number"},
+  {w:"four",cat:"Number"},{w:"five",cat:"Number"},
+  {w:"eat",cat:"Food"},{w:"drink",cat:"Food"},{w:"water",cat:"Food"},
+  {w:"apple",cat:"Food"},{w:"milk",cat:"Food"},{w:"more",cat:"Food"},
+  {w:"hungry",cat:"Food"},{w:"yummy",cat:"Food"},
+  {w:"home",cat:"Place"},{w:"school",cat:"Place"},{w:"outside",cat:"Place"},
+  {w:"bathroom",cat:"Place"},{w:"bed",cat:"Place"},
+  {w:"go",cat:"Action"},{w:"stop",cat:"Action"},{w:"come",cat:"Action"},
+  {w:"sit",cat:"Action"},{w:"stand",cat:"Action"},{w:"wait",cat:"Action"},
+  {w:"help",cat:"Action"},{w:"want",cat:"Action"},{w:"play",cat:"Action"},
+  {w:"look",cat:"Action"},{w:"listen",cat:"Action"},{w:"put",cat:"Action"},
+  {w:"open",cat:"Action"},{w:"close",cat:"Action"},{w:"give",cat:"Action"},
+  {w:"take",cat:"Action"},{w:"like",cat:"Action"},{w:"see",cat:"Action"},
+  {w:"happy",cat:"Feeling"},{w:"sad",cat:"Feeling"},{w:"mad / angry",cat:"Feeling"},
+  {w:"scared",cat:"Feeling"},{w:"tired",cat:"Feeling"},{w:"hurt",cat:"Feeling"},
+  {w:"okay",cat:"Feeling"},
+  {w:"yes",cat:"Concept"},{w:"no",cat:"Concept"},{w:"all done",cat:"Concept"},
+  {w:"hot",cat:"Concept"},{w:"cold",cat:"Concept"},{w:"big",cat:"Concept"},
+  {w:"little",cat:"Concept"},{w:"up",cat:"Concept"},{w:"down",cat:"Concept"},
+  {w:"in",cat:"Concept"},{w:"out",cat:"Concept"},{w:"on",cat:"Concept"},
+  {w:"off",cat:"Concept"},{w:"mine",cat:"Concept"},{w:"please",cat:"Concept"},
+  {w:"thank you",cat:"Concept"},{w:"hi / bye",cat:"Concept"},{w:"here",cat:"Concept"},
+  {w:"there",cat:"Concept"},{w:"again",cat:"Concept"},
+  {w:"ball",cat:"Object"},{w:"book",cat:"Object"},{w:"car",cat:"Object"},
+  {w:"shoe",cat:"Object"},{w:"bag / pack",cat:"Object"},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let wordState = {};
+let currentFilter = 'all';
+const STORAGE_KEY = 'tk-readiness-v1';
+
+// ── PERSISTENCE ───────────────────────────────────────────────────────────────
+function saveState() {
+  const checkedKeys = Array.from(document.querySelectorAll('.item.checked'))
+    .map(el => el.dataset.key)
+    .filter(Boolean);
+  const state = {
+    checkedKeys,
+    wordState,
+    savedAt: new Date().toISOString()
+  };
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    updateSavedBadge(state.savedAt);
+  } catch(e) { /* localStorage unavailable */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    // Restore checked skills
+    if (state.checkedKeys && Array.isArray(state.checkedKeys)) {
+      state.checkedKeys.forEach(key => {
+        const el = document.querySelector(`.item[data-key="${key}"]`);
+        if (el) {
+          el.classList.add('checked');
+          const mark = el.querySelector('.checkmark');
+          if (mark) mark.textContent = '✓';
+        }
+      });
+    }
+    // Restore word state
+    if (state.wordState) {
+      wordState = state.wordState;
+    }
+    if (state.savedAt) updateSavedBadge(state.savedAt);
+    updateAllBadges();
+    updateOverview();
+  } catch(e) { /* ignore */ }
+}
+
+function updateSavedBadge(isoStr) {
+  const badge = document.getElementById('saved-badge');
+  if (!badge || !isoStr) return;
+  const d = new Date(isoStr);
+  const now = new Date();
+  const diffMin = Math.round((now - d) / 60000);
+  let label;
+  if (diffMin < 1)       label = 'Saved just now';
+  else if (diffMin < 60) label = `Saved ${diffMin}m ago`;
+  else {
+    label = 'Saved ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  badge.textContent = label;
+}
+
+// ── WORDS ─────────────────────────────────────────────────────────────────────
+function buildWordGrid() {
+  const grid = document.getElementById('word-grid');
+  grid.innerHTML = '';
+  const filtered = words.filter(({w}) => {
+    if (currentFilter === 'all')      return true;
+    if (currentFilter === 'not-yet')  return !wordState[w] || wordState[w] === '';
+    if (currentFilter === 'working')  return wordState[w] === 'working';
+    if (currentFilter === 'knows')    return wordState[w] === 'knows';
+    return true;
+  });
+  filtered.forEach(({w, cat}) => {
+    const tile = document.createElement('div');
+    const st = wordState[w] || '';
+    tile.className = 'word-tile' + (st === 'knows' ? ' knows' : st === 'working' ? ' working' : '');
+    tile.innerHTML = `<span>${w}</span><span class="word-category-label">${cat}</span>`;
+    tile.onclick = () => cycleWord(w);
+    grid.appendChild(tile);
+  });
+  updateWordProgress();
+}
+
+function cycleWord(w) {
+  const states = ['', 'working', 'knows'];
+  const cur = wordState[w] || '';
+  wordState[w] = states[(states.indexOf(cur) + 1) % 3];
+  buildWordGrid();
+  updateOverview();
+  saveState();
+}
+
+function filterWords(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildWordGrid();
+}
+
+function updateWordProgress() {
+  const knows   = Object.values(wordState).filter(v => v === 'knows').length;
+  const working = Object.values(wordState).filter(v => v === 'working').length;
+  document.getElementById('knows-count').textContent   = knows;
+  document.getElementById('working-count').textContent = working;
+  document.getElementById('word-progress-bar').style.width = (knows).toFixed(0) + '%';
+}
+
+// ── SKILLS ────────────────────────────────────────────────────────────────────
+function toggleItem(label) {
+  if (event) { event.preventDefault && event.preventDefault(); event.stopPropagation && event.stopPropagation(); }
+  label.classList.toggle('checked');
+  const check = label.querySelector('.checkmark');
+  check.textContent = label.classList.contains('checked') ? '✓' : '';
+  updateAllBadges();
+  updateOverview();
+  saveState();
+}
+
+function updateAllBadges() {
+  ['sec-commands','sec-express','sec-questions','sec-social','sec-self','sec-academic'].forEach(id => {
+    const sec = document.getElementById(id);
+    if (!sec) return;
+    const total = sec.querySelectorAll('.item').length;
+    const done  = sec.querySelectorAll('.item.checked').length;
+    const badge = document.getElementById('badge-' + id);
+    if (badge) {
+      badge.textContent = done + ' / ' + total;
+      badge.className   = 'section-badge' + (done === total ? ' done' : '');
+    }
+  });
+}
+
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['skills','words','overview'][i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'overview') updateOverview();
+  if (name === 'words')    buildWordGrid();
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────────
+function updateOverview() {
+  const allItems  = document.querySelectorAll('#panel-skills .item');
+  const checked   = document.querySelectorAll('#panel-skills .item.checked');
+  const done      = checked.length;
+  const total     = allItems.length;
+  const pct       = total > 0 ? Math.round(done / total * 100) : 0;
+  const knows     = Object.values(wordState).filter(v => v === 'knows').length;
+  const working   = Object.values(wordState).filter(v => v === 'working').length;
+
+  document.getElementById('ov-skills-done').textContent  = done;
+  document.getElementById('ov-skills-total').textContent = total;
+  document.getElementById('ov-words-knows').textContent  = knows;
+  document.getElementById('ov-words-working').textContent = working;
+  document.getElementById('ov-pct').textContent  = pct + '%';
+  document.getElementById('ov-bar').style.width  = pct + '%';
+
+  const sub = pct === 0   ? 'Start checking off skills as Omar demonstrates them consistently.' :
+              pct < 25    ? 'Great start — keep going! Every skill checked is a win.' :
+              pct < 50    ? 'Good progress — Omar is building his foundation.' :
+              pct < 75    ? 'Strong progress! Over halfway there.' :
+              pct < 100   ? 'Almost ready — incredible work!' :
+                            '🎉 All TK skills checked! Omar is ready.';
+  document.getElementById('ov-sub').textContent = sub;
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function confirmReset() {
+  if (!confirm('Reset ALL progress? This cannot be undone.')) return;
+  document.querySelectorAll('.item.checked').forEach(el => {
+    el.classList.remove('checked');
+    const mark = el.querySelector('.checkmark');
+    if (mark) mark.textContent = '';
+  });
+  wordState = {};
+  currentFilter = 'all';
+  updateAllBadges();
+  updateOverview();
+  buildWordGrid();
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  document.getElementById('saved-badge').textContent = 'Progress reset';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildWordGrid();
+loadState();
+updateAllBadges();
+updateOverview();
+</script>
+</body>
+</html>
