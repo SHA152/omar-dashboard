@@ -264,11 +264,8 @@
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────────
-const URLS = {
-  trials:  'https://docs.google.com/spreadsheets/d/e/2PACX-1vSauBLLM3_4WJUoGTZRVkL2OGYS2joYqfdsrE5fEgA6nG34_IWDHzjS9EkfNk3xoPfyOEjXo0pP0cyY/pub?gid=47686802&single=true&output=csv',
-  current: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSauBLLM3_4WJUoGTZRVkL2OGYS2joYqfdsrE5fEgA6nG34_IWDHzjS9EkfNk3xoPfyOEjXo0pP0cyY/pub?gid=1152629069&single=true&output=csv',
-  prompts: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSauBLLM3_4WJUoGTZRVkL2OGYS2joYqfdsrE5fEgA6nG34_IWDHzjS9EkfNk3xoPfyOEjXo0pP0cyY/pub?gid=2071094067&single=true&output=csv'
-};
+const SUPABASE_URL  = 'https://zipeygwjldojnaigpryy.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InppcGV5Z3dqbGRvam5haWdwcnl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNzkyMDcsImV4cCI6MjA5Njc1NTIwN30.rMIWQzqjsqcZxnrDEw6NyGjcGxXu9X8rs8c4Ge503a0';
 
 const DOMAINS = [
   { key: 'Communication & Language', icon: '💬' },
@@ -332,44 +329,14 @@ const PROMPT_COLORS = {
   partial_physical: '#ea580c', full_physical: '#dc2626', no_response: '#94a3b8'
 };
 
-// ── CSV PARSER ───────────────────────────────────────────────────────────────
-function parseLine(line) {
-  const result = []; let cur = ''; let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') {
-      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
-      else inQ = !inQ;
-    } else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
-    else cur += c;
-  }
-  result.push(cur);
-  return result;
-}
-function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 1) return [];
-  const headers = parseLine(lines[0]).map(h => h.trim());
-  return lines.slice(1).filter(l => l.trim()).map(l => {
-    const vals = parseLine(l);
-    const obj = {};
-    headers.forEach((h, i) => obj[h] = (vals[i] || '').trim());
-    return obj;
-  });
-}
-
 // ── FETCH ────────────────────────────────────────────────────────────────────
-async function fetchCSV(url) {
-  const fetchUrl = url + '&nocache=' + Date.now();
-  if (window.location.protocol === 'file:') {
-    throw Object.assign(new Error('FILE_PROTOCOL'), { isFileProtocol: true });
-  }
+async function fetchSupabase(table, order = 'id.asc') {
+  const url = `${SUPABASE_URL}/rest/v1/${table}?select=*&order=${order}&limit=2000`;
   let res;
-  try { res = await fetch(fetchUrl); } catch(e) { throw new Error('NETWORK: ' + e.message); }
+  try { res = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }); }
+  catch(e) { throw new Error('NETWORK: ' + e.message); }
   if (!res.ok) throw new Error('HTTP ' + res.status);
-  const text = await res.text();
-  if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) throw new Error('NOT_CSV');
-  return parseCSV(text);
+  return res.json();
 }
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
@@ -772,9 +739,9 @@ async function loadAll() {
 
   try {
     const [current, prompts, trials] = await Promise.all([
-      fetchCSV(URLS.current),
-      fetchCSV(URLS.prompts),
-      fetchCSV(URLS.trials)
+      fetchSupabase('focus',   'id.asc'),
+      fetchSupabase('prompts', 'id.asc'),
+      fetchSupabase('trials',  'timestamp.asc')
     ]);
 
     app.innerHTML =
@@ -789,13 +756,7 @@ async function loadAll() {
   } catch(e) {
     loading.style.display = 'none';
     errEl.style.display   = 'block';
-    if (e.isFileProtocol) {
-      errEl.innerHTML = `<strong>📂 Open via a local server, not directly from your desktop.</strong><br><br>Run in Terminal: <code>python3 -m http.server 8080</code> then open <a href="http://localhost:8080">http://localhost:8080</a>`;
-    } else if (e.message === 'NOT_CSV') {
-      errEl.innerHTML = `<strong>⚠️ Google Sheet returned a login page.</strong> Make sure all tabs are published as CSV.`;
-    } else {
       errEl.innerHTML = `<strong>Could not load data.</strong> ${e.message}`;
-    }
   }
 }
 
@@ -806,3 +767,4 @@ loadAll();
 </script>
 </body>
 </html>
+
